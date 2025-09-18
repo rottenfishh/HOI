@@ -1,0 +1,4 @@
+- proper key generation
+- everything idk
+- multiple threads handling clients and back pressure limit
+- client
