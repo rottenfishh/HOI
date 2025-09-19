@@ -1,34 +1,30 @@
 package ru.nsu.kolodina.keys;
 
-import lombok.AllArgsConstructor;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
-import java.util.Deque;
+import java.nio.channels.Selector;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import static java.lang.Thread.sleep;
 
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class GeneratingThread  implements Runnable {
     KeyGeneration keyGeneration = new KeyGeneration();
-
-    final Deque<ClientConnection> requestsQueue;
-    final Deque<ClientConnection> outputQueue;
+    final Selector outputSelector; // selector of output would be needed everywhere
+    @NonNull
+    final LinkedBlockingQueue<ClientConnection> requestsQueue;
+    @NonNull
+    final LinkedBlockingQueue<ClientConnection> outputQueue;
 
     @Override
     public void run() {
-        synchronized(requestsQueue) {
-            if (requestsQueue.isEmpty()) {
-                try {
-                    wait();
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-            } else {
-                ClientConnection c = requestsQueue.pop();
-                c.rsaKey = keyGeneration.generateKeys(c.name);
-                synchronized(outputQueue) {
-                    outputQueue.push(c);
-                }
-            }
+        try {
+            ClientConnection c = requestsQueue.take();
+            c.rsaKey = keyGeneration.generateKeys(c.name);
+            outputQueue.put(c);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
     }
 }
