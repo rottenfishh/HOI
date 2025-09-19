@@ -6,16 +6,15 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Server {
 
-    Map<String, ClientConnection> clients = new HashMap<>();
+    Map<String, List<ClientConnection>> clients = new HashMap<>();
     ServerSocket serverSocket;
-    Generation keyGenerator = new Generation();
+    KeyGeneration keyGenerator = new KeyGeneration();
+    Deque<ClientConnection> requestsQueue = new LinkedList<>();
+    Deque<ClientConnection> outputQueue = new LinkedList<>();
 
     public Server(int port) {
         try {
@@ -36,14 +35,19 @@ public class Server {
                 break;
             }
             try {
+                ClientConnection client = new ClientConnection(clientSocket, in, out, name);
                 BufferedReader in = new BufferedReader(new InputStreamReader(
                         clientSocket.getInputStream()));
                 PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
                 String name = in.readLine();
                 if (clients.containsKey(name)) {
-                    out.println(clients.get(name).rsaKey);
+                    if (!clients.get(name).getFirst().ready) {
+                        clients.get(name).add(client); // if not ready, add connection to the list of this client's name
+                    } else { //else put in queue for output
+
+                    }
+                    // also need to handle if key still generating
                 } else {
-                    ClientConnection client = new ClientConnection(clientSocket, in, out, name);
                     clients.putIfAbsent(name, client);
                     //some waiting for the keys logic
                 }

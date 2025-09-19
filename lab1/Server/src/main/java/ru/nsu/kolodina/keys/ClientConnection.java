@@ -21,6 +21,6 @@ public class ClientConnection {
     @Setter
     String name;
     @Setter
-    String rsaKey;
+    KeyPairRequest rsaKey;
     Boolean ready;
 }
