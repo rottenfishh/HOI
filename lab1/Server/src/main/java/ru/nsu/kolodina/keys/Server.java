@@ -10,19 +10,39 @@ import java.nio.channels.ServerSocketChannel;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.LinkedBlockingQueue;
 
 @AllArgsConstructor
 public class Server {
     int port;
-    Map<String, Client> clients = new HashMap<>();
+    int numOfInputThreads;
+    int numOfGeneratingThreads;
+    int numOfOutputThreads;
+
     public void startServer() {
         try {
-            Selector serverSelector = null;
-            serverSelector = Selector.open();
+            Map<String, KeyState> clients = new ConcurrentHashMap<>();
+            final LinkedBlockingQueue<ClientConnection> requestsQueue = new LinkedBlockingQueue<>();
+            final LinkedBlockingQueue<ClientConnection> outputQueue = new LinkedBlockingQueue<>();
+            Selector serverSelector = Selector.open();
+            Selector outputSelector = Selector.open();
             ServerSocketChannel serverSocket = ServerSocketChannel.open();
             serverSocket.bind(new InetSocketAddress("localhost", port));
             serverSocket.configureBlocking(false);
             serverSocket.register(serverSelector, SelectionKey.OP_ACCEPT);
+            for (int i = 0; i < numOfInputThreads; i++) {
+                Thread t = new Thread(new InputThread(serverSelector, serverSocket,requestsQueue));
+                t.start();
+            }
+            for (int i = 0; i < numOfGeneratingThreads; i++) {
+                Thread t = new Thread(new GeneratingThread(outputSelector, requestsQueue, outputQueue));
+                t.start();
+            }
+            for (int i = 0; i < numOfOutputThreads; i++) {
+                Thread t = new Thread(new OutputThread(outputQueue, outputSelector));
+                t.start();
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

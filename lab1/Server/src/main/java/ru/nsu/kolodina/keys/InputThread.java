@@ -10,20 +10,16 @@ import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
 
 @AllArgsConstructor
 public class InputThread implements Runnable {
-    Map<String, KeyState> clients;
     final Selector serverSelector;
     final ServerSocketChannel serverSocket;
-    final Selector outputSelector; // selector of output would be needed everywhere
-    @NonNull
     final LinkedBlockingQueue<ClientConnection> requestsQueue;
-    @NonNull
-    final LinkedBlockingQueue<ClientConnection> outputQueue;
     @Override
     public void run() {
         while (true) {
@@ -32,15 +28,21 @@ public class InputThread implements Runnable {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-            for (SelectionKey key : serverSelector.selectedKeys()) {
-                if (key.isAcceptable()) {
-                    try {
+            Iterator<SelectionKey> iter = serverSelector.selectedKeys().iterator();
+            while (iter.hasNext()) {
+                SelectionKey key = iter.next();
+                iter.remove();
+                try {
+                    if (key.isAcceptable()) {
                         SocketChannel client = serverSocket.accept();
-                        client.configureBlocking(false);
-                        client.register(serverSelector, SelectionKey.OP_READ);
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
+                        System.out.println("accepted client");
+                        if (client != null) {
+                            client.configureBlocking(false);
+                            client.register(serverSelector, SelectionKey.OP_READ);
+                        }
                     }
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
                 }
                 if (key.isReadable()) {
                     SocketChannel clientChannel = (SocketChannel) key.channel();
@@ -51,12 +53,13 @@ public class InputThread implements Runnable {
                         throw new RuntimeException(e);
                     }
                     String name = new String(buffer.array());
+                    System.out.println("Client " + name + " received");
                     ClientConnection c = new ClientConnection(name, clientChannel);
                     key.attach(c);
+                    requestsQueue.offer(c);
                     // sent client connection to request list to generating thread
                 }
             }
-            serverSelector.selectedKeys().clear();
         }
     }
 }

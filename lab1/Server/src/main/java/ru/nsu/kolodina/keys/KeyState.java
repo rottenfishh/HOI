@@ -9,5 +9,5 @@ public class KeyState {
     volatile KeyPairRequest key;
     AtomicBoolean ready = new AtomicBoolean(false);
     AtomicBoolean generating = new AtomicBoolean(false);
-    List<ClientConnection> clients = Collections.synchronizedList(new ArrayList<>());;
+    List<ClientConnection> keyClients = Collections.synchronizedList(new ArrayList<>());;
 }

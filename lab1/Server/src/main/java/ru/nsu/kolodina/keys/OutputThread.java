@@ -16,7 +16,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 @AllArgsConstructor
 public class OutputThread implements Runnable {
-    final LinkedBlockingQueue<ClientConnection> requestsQueue;
     final LinkedBlockingQueue<ClientConnection> outputQueue;
     final Selector outputSelector; // selector of output would be needed everywhere
     // стоит селектор на сокеты клиентов
@@ -25,7 +24,8 @@ public class OutputThread implements Runnable {
     public void writeToClient(SelectionKey key) {
         SocketChannel clientChannel = (SocketChannel) key.channel();
         ClientConnection c = (ClientConnection) key.attachment();
-        ByteBuffer byteBuffer =StandardCharsets.UTF_8.encode(c.rsaKey.toString());
+        System.out.println("Client " + c.name + " received in output thread");
+        ByteBuffer byteBuffer =StandardCharsets.UTF_8.encode(c.rsaKey.toString()); // wrap up in proper text handling
         try {
             clientChannel.write(byteBuffer);
         } catch (IOException e) {
@@ -47,6 +47,7 @@ public class OutputThread implements Runnable {
                 }
             }
             outputSelector.selectedKeys().clear();
+
             ClientConnection c;
             while ((c = outputQueue.poll()) != null) {
                 SocketChannel clientChannel = c.clientChannel;
