@@ -8,18 +8,14 @@ import lombok.Setter;
 import java.io.BufferedReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.nio.channels.SocketChannel;
 
 @RequiredArgsConstructor
 public class ClientConnection {
     @NonNull
-    Socket clientSocket;
-    @NonNull
-    BufferedReader in;
-    @NonNull
-    PrintWriter out;
-    @NonNull
-    @Setter
     String name;
+    @NonNull
+    SocketChannel clientChannel;
     @Setter
     KeyPairRequest rsaKey;
     Boolean ready;
