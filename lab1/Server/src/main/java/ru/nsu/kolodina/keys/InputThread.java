@@ -20,6 +20,16 @@ public class InputThread implements Runnable {
     final Selector serverSelector;
     final ServerSocketChannel serverSocket;
     final LinkedBlockingQueue<ClientConnection> requestsQueue;
+
+    public String trimInput(ByteBuffer input) {
+        StringBuilder res = new StringBuilder();
+        for (byte b : input.array()) {
+            if (b == '\0') break;
+            res.append((char) b);
+        }
+        return res.toString();
+    }
+
     @Override
     public void run() {
         while (true) {
@@ -45,6 +55,7 @@ public class InputThread implements Runnable {
                     throw new RuntimeException(e);
                 }
                 if (key.isReadable()) {
+                    System.out.println("bebe");
                     SocketChannel clientChannel = (SocketChannel) key.channel();
                     ByteBuffer buffer = ByteBuffer.allocate(1024);
                     try {
@@ -52,7 +63,7 @@ public class InputThread implements Runnable {
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
-                    String name = new String(buffer.array());
+                    String name = trimInput(buffer);
                     System.out.println("Client " + name + " received");
                     ClientConnection c = new ClientConnection(name, clientChannel);
                     key.attach(c);

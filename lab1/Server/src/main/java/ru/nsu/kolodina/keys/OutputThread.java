@@ -11,6 +11,7 @@ import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Deque;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -21,18 +22,6 @@ public class OutputThread implements Runnable {
     // стоит селектор на сокеты клиентов
     // ждем на очереди аутпут
 
-    public void writeToClient(SelectionKey key) {
-        SocketChannel clientChannel = (SocketChannel) key.channel();
-        ClientConnection c = (ClientConnection) key.attachment();
-        System.out.println("Client " + c.name + " received in output thread");
-        ByteBuffer byteBuffer =StandardCharsets.UTF_8.encode(c.rsaKey.toString()); // wrap up in proper text handling
-        try {
-            clientChannel.write(byteBuffer);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     @Override
     public void run() {
         while (true) {
@@ -41,22 +30,39 @@ public class OutputThread implements Runnable {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-            for (SelectionKey key : outputSelector.selectedKeys()) {
+            Iterator<SelectionKey> iter = outputSelector.selectedKeys().iterator();
+            while (iter.hasNext()) {
+                SelectionKey key = iter.next();
+                iter.remove();
                 if (key.isWritable()) {
-                    writeToClient(key);
+                    System.out.println("Writing in output thread");
+                    ClientConnection c = (ClientConnection) key.attachment();
+                    ByteBuffer buf = ByteBuffer.wrap((c.rsaKey.toString() + "\n").getBytes(StandardCharsets.UTF_8));
+                    ByteBuffer buffer = ByteBuffer.wrap("afdfs".toString().getBytes(StandardCharsets.UTF_8));
+                    SocketChannel ch = (SocketChannel) key.channel();
+                    try {
+                        int written = ch.write(buf);
+                        System.out.println(c.name);
+                        System.out.println("written=" + written);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                    key.interestOps(0); // or OP_READ if needed
                 }
             }
-            outputSelector.selectedKeys().clear();
 
+            outputSelector.selectedKeys().clear();
             ClientConnection c;
             while ((c = outputQueue.poll()) != null) {
                 SocketChannel clientChannel = c.clientChannel;
+                System.out.println("Client received in output thread");
                 try {
                     clientChannel.register(outputSelector, SelectionKey.OP_WRITE).attach(c);
-                } catch (ClosedChannelException e) {
+                } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
             }
+            outputSelector.wakeup();
         }
     }
 }

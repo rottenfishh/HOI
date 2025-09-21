@@ -56,6 +56,7 @@ public class Client {
         String response;
         try {
             String line = in.readLine();
+            System.out.println(line);
             if (line == null) {
                 stopConnection();
                 return null;

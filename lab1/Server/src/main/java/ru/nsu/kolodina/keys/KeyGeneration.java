@@ -41,14 +41,14 @@ public class KeyGeneration {
         KeyPair keyPair = keyGen.generateKeyPair();
 
         // Set certificate details
-        X500Name issuerName = new X500Name("server");
-        X500Name subjectName = new X500Name(clientName);
+        X500Name issuerName = new X500Name("CN=server");
+        X500Name subjectName = new X500Name("CN=" + clientName);
         BigInteger serial = BigInteger.valueOf(System.currentTimeMillis());
         Date notBefore = new Date(System.currentTimeMillis() - 1000);
         Date notAfter = new Date(System.currentTimeMillis() + (365 * 24 * 60 * 60 * 1000L)); // valid for 1 year
 
         // Create certificate
-        X509v3CertificateBuilder certBuilder = new X509v3CertificateBuilder(issuerName, serial, notBefore, notAfter, subjectName, SubjectPublicKeyInfo.getInstance(keyPair.getPublic()));
+        X509v3CertificateBuilder certBuilder = new X509v3CertificateBuilder(issuerName, serial, notBefore, notAfter, subjectName, SubjectPublicKeyInfo.getInstance(keyPair.getPublic().getEncoded()));
 
         // Sign the certificate
         ContentSigner signer = null;

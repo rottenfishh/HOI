@@ -47,4 +47,9 @@ public class Server {
             throw new RuntimeException(e);
         }
     }
+
+    public static void main(String[] args) {
+        Server server = new Server(5555, 1, 7, 2);
+        server.startServer();
+    }
 }
