@@ -2,12 +2,14 @@ package ru.nsu.kolodina.keys;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import ru.nsu.kolodina.keys.KeyPairRequest;
 
 @RequiredArgsConstructor
 public class Client {
@@ -52,7 +54,7 @@ public class Client {
         out.println(name);
     }
 
-    public String getKey() {
+    public JSONObject getKey() {
         String response;
         try {
             String line = in.readLine();
@@ -65,7 +67,7 @@ public class Client {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        return response;
+        return new JSONObject(response);
     }
 
     public void stopConnection() throws IOException {
@@ -75,7 +77,9 @@ public class Client {
         connectionClosed = true;
     }
 
-    public void saveKeys() {
+    public void saveKeys(JSONObject json) {
+        KeyPairRequest keyPairRequest = JsonHandler.parseJson(json);
+        System.out.println(keyPairRequest.toString());
         //implement
     }
     public void run() {
@@ -83,15 +87,16 @@ public class Client {
         System.out.println("Connection established");
         do {
             System.out.println("trying to get key");
-            String keys = getKey();
-            System.out.println("got key");
+            JSONObject keys = getKey();
             if (keys == null) {
                 break;
             }
+            saveKeys(keys);
+            System.out.println("got key");
         } while (!connectionClosed);
     }
     public static void main(String[] args) {
-        Client client = new Client("localhost", 5555, "Bebe");
+        Client client = new Client("localhost", 5555, "Bebee");
         client.run();
     }
 }

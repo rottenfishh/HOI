@@ -37,8 +37,7 @@ public class OutputThread implements Runnable {
                 if (key.isWritable()) {
                     System.out.println("Writing in output thread");
                     ClientConnection c = (ClientConnection) key.attachment();
-                    ByteBuffer buf = ByteBuffer.wrap((c.rsaKey.toString() + "\n").getBytes(StandardCharsets.UTF_8));
-                    ByteBuffer buffer = ByteBuffer.wrap("afdfs".toString().getBytes(StandardCharsets.UTF_8));
+                    ByteBuffer buf = ByteBuffer.wrap((JsonHandler.createJson(c.rsaKey).toString() + "\n").getBytes(StandardCharsets.UTF_8));
                     SocketChannel ch = (SocketChannel) key.channel();
                     try {
                         int written = ch.write(buf);
@@ -47,7 +46,12 @@ public class OutputThread implements Runnable {
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
-                    key.interestOps(0); // or OP_READ if needed
+                    try {
+                        ch.close();
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                    //key.interestOps(0); // or OP_READ if needed
                 }
             }
 

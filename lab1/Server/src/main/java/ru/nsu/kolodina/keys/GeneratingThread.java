@@ -10,7 +10,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 @RequiredArgsConstructor
 public class GeneratingThread  implements Runnable {
 
-    KeyGeneration keyGeneration = new KeyGeneration();
+    RsaKeyManagement rsaKeyManagement = new RsaKeyManagement();
     final Selector outputSelector;
     ConcurrentHashMap<String, KeyState> clients= new ConcurrentHashMap<>();
     @NonNull
@@ -31,7 +31,7 @@ public class GeneratingThread  implements Runnable {
                     KeyState state = clients.computeIfAbsent(c.name, k -> new KeyState());
                     if (!state.generating.getAndSet(true)) {
                         state.keyClients.add(c);
-                        state.key = keyGeneration.generateKeys(c.name);
+                        state.key = rsaKeyManagement.generateClientKeys(c.name);
                         state.ready.set(true); //что если пока мы генерировали, на это имя добавились соединения? лист не потокобезопасен, надо добавить синхронизацию на нем тоже
                         for (ClientConnection cl : state.keyClients) {
                             cl.rsaKey = state.key;
