@@ -4,12 +4,9 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.Socket;
-import ru.nsu.kolodina.keys.KeyPairRequest;
+import java.security.cert.CertificateEncodingException;
 
 @RequiredArgsConstructor
 public class Client {
@@ -79,8 +76,22 @@ public class Client {
 
     public void saveKeys(JSONObject json) {
         KeyPairRequest keyPairRequest = JsonHandler.parseJson(json);
-        System.out.println(keyPairRequest.toString());
-        //implement
+        try (FileOutputStream fos = new FileOutputStream(name + "PublicKey.key")) {
+            fos.write(keyPairRequest.keyPair.getPublic().getEncoded());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        try (FileOutputStream fos = new FileOutputStream(name + "PrivateKey")) {
+            fos.write(keyPairRequest.keyPair.getPrivate().getEncoded());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        try (FileOutputStream fos = new FileOutputStream(name + "Certificate.crt")) {
+            fos.write(keyPairRequest.certificate.getEncoded());
+        } catch (IOException | CertificateEncodingException e) {
+            throw new RuntimeException(e);
+        }
+        System.out.println(keyPairRequest); // delete debug later
     }
     public void run() {
         startConnection();
@@ -96,7 +107,7 @@ public class Client {
         } while (!connectionClosed);
     }
     public static void main(String[] args) {
-        Client client = new Client("localhost", 5555, "Bebee");
+        Client client = new Client("localhost", 5555, args[0]);
         client.run();
     }
 }

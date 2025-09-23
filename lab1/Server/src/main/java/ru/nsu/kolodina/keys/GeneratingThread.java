@@ -35,7 +35,6 @@ public class GeneratingThread  implements Runnable {
                         state.ready.set(true); //что если пока мы генерировали, на это имя добавились соединения? лист не потокобезопасен, надо добавить синхронизацию на нем тоже
                         for (ClientConnection cl : state.keyClients) {
                             cl.rsaKey = state.key;
-                            System.out.println("keys got" + cl.rsaKey.keyPair.toString());
                             outputQueue.put(cl);
                         }
                     }

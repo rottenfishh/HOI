@@ -39,23 +39,31 @@ public class OutputThread implements Runnable {
                     ClientConnection c = (ClientConnection) key.attachment();
                     ByteBuffer buf = ByteBuffer.wrap((JsonHandler.createJson(c.rsaKey).toString() + "\n").getBytes(StandardCharsets.UTF_8));
                     SocketChannel ch = (SocketChannel) key.channel();
-                    try {
-                        int written = ch.write(buf);
-                        System.out.println(c.name);
-                        System.out.println("written=" + written);
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
+                    while (buf.hasRemaining()) {
+                        int written = 0;
+                        try {
+                            if (!ch.isConnected()) {
+                                break;
+                            }
+                            written = ch.write(buf);
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                        if (written == 0) {
+                            key.interestOps(SelectionKey.OP_WRITE);
+                            return;
+                        }
                     }
+                    System.out.println("fully written for " + c.name);
+                    key.cancel();
                     try {
                         ch.close();
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
-                    //key.interestOps(0); // or OP_READ if needed
                 }
             }
 
-            outputSelector.selectedKeys().clear();
             ClientConnection c;
             while ((c = outputQueue.poll()) != null) {
                 SocketChannel clientChannel = c.clientChannel;

@@ -88,7 +88,6 @@ public class RsaKeyManagement {
             throw new RuntimeException(e);
         }
 
-        System.out.println(certificate);
         return new KeyPairRequest(keyPair, certificate);
     }
 }
