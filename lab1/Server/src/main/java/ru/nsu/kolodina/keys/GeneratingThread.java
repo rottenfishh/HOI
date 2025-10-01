@@ -2,10 +2,14 @@ package ru.nsu.kolodina.keys;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import ru.nsu.kolodina.keys.entity.ClientConnection;
+import ru.nsu.kolodina.keys.entity.KeyState;
+import ru.nsu.kolodina.keys.utils.RsaKeyManagement;
 
 import java.nio.channels.Selector;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
+import static ru.nsu.kolodina.keys.entity.KeyState.State.*;
 
 @RequiredArgsConstructor
 public class GeneratingThread  implements Runnable {
@@ -24,21 +28,24 @@ public class GeneratingThread  implements Runnable {
             try {
                 ClientConnection c = requestsQueue.take();
                 System.out.println("Client received in generating thread");
-                if (clients.containsKey(c.name)) {
-                    KeyState state = clients.get(c.name);
-                    if (state.ready.get()) outputQueue.put(c); else state.keyClients.add(c); // ключ готов - отправим в аутпут. ключа нет - добавить в мапу этого ключа
+
+                KeyState keyState = clients.computeIfAbsent(c.name, k -> new KeyState());
+                if (keyState.state.getAndSet(GENERATING).equals(GENERATING)) {
+                    synchronized (keyState) {
+                        if (keyState.state.get().equals(READY)) outputQueue.put(c);
+                        else keyState.keyClients.add(c);
+                    }
                 } else {
-                    KeyState state = clients.computeIfAbsent(c.name, k -> new KeyState());
-                    if (!state.generating.getAndSet(true)) {
-                        state.keyClients.add(c);
-                        state.key = rsaKeyManagement.generateClientKeys(c.name);
-                        state.ready.set(true); //что если пока мы генерировали, на это имя добавились соединения? лист не потокобезопасен, надо добавить синхронизацию на нем тоже
-                        for (ClientConnection cl : state.keyClients) {
-                            cl.rsaKey = state.key;
-                            outputQueue.put(cl);
-                        }
+                    keyState.keyClients.add(c);
+                    keyState.key = rsaKeyManagement.generateClientKeys(c.name);
+                    System.out.println("Generating key for client " + c.name);
+                    keyState.state.set(READY);
+                    for (ClientConnection cl : keyState.keyClients) {
+                        cl.rsaKey = keyState.key;
+                        outputQueue.put(cl);
                     }
                 }
+
                 System.out.println("output wake up");
                 outputSelector.wakeup();
             } catch (InterruptedException e) {

@@ -6,6 +6,7 @@ import org.json.JSONObject;
 
 import java.io.*;
 import java.net.Socket;
+import java.security.Key;
 import java.security.cert.CertificateEncodingException;
 
 @RequiredArgsConstructor
@@ -55,12 +56,11 @@ public class Client {
         String response;
         try {
             String line = in.readLine();
-            System.out.println(line);
             if (line == null) {
                 stopConnection();
                 return null;
             }
-            response = line; // wrap up logic here later
+            response = line;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -74,25 +74,27 @@ public class Client {
         connectionClosed = true;
     }
 
+    public void writeToFile(String fileName, byte[] data) {
+        try (FileOutputStream fos = new FileOutputStream(name + "." + fileName)) {
+            fos.write(data);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
     public void saveKeys(JSONObject json) {
         KeyPairRequest keyPairRequest = JsonHandler.parseJson(json);
-        try (FileOutputStream fos = new FileOutputStream(name + "PublicKey.key")) {
-            fos.write(keyPairRequest.keyPair.getPublic().getEncoded());
-        } catch (IOException e) {
+
+        writeToFile("publicKey.pub", keyPairRequest.keyPair.getPublic().getEncoded());
+
+        writeToFile("privateKey", keyPairRequest.keyPair.getPrivate().getEncoded());
+
+        try {
+            writeToFile("Certificate.crt", keyPairRequest.certificate.getEncoded());
+        } catch (CertificateEncodingException e) {
             throw new RuntimeException(e);
         }
-        try (FileOutputStream fos = new FileOutputStream(name + "PrivateKey")) {
-            fos.write(keyPairRequest.keyPair.getPrivate().getEncoded());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        try (FileOutputStream fos = new FileOutputStream(name + "Certificate.crt")) {
-            fos.write(keyPairRequest.certificate.getEncoded());
-        } catch (IOException | CertificateEncodingException e) {
-            throw new RuntimeException(e);
-        }
-        System.out.println(keyPairRequest); // delete debug later
     }
+
     public void run() {
         startConnection();
         System.out.println("Connection established");
@@ -106,6 +108,7 @@ public class Client {
             System.out.println("got key");
         } while (!connectionClosed);
     }
+
     public static void main(String[] args) {
         Client client = new Client("localhost", 5555, args[0]);
         client.run();

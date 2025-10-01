@@ -1,7 +1,6 @@
-package ru.nsu.kolodina.keys;
+package ru.nsu.kolodina.keys.utils;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.file.Files;
@@ -19,6 +18,7 @@ import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
+import ru.nsu.kolodina.keys.KeyPairRequest;
 
 public class RsaKeyManagement {
 

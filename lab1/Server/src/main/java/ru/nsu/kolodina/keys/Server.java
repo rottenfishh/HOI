@@ -1,14 +1,14 @@
 package ru.nsu.kolodina.keys;
 
 import lombok.AllArgsConstructor;
+import ru.nsu.kolodina.keys.entity.ClientConnection;
+import ru.nsu.kolodina.keys.entity.KeyState;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;

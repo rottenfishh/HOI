@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'application'
 }
 
 group = 'ru.nsu.kolodina.keys'
@@ -15,6 +16,12 @@ dependencies {
     compileOnly 'org.projectlombok:lombok:1.18.30'  // use latest version
     annotationProcessor 'org.projectlombok:lombok:1.18.30'
     implementation 'org.json:json:20231013'
+    implementation project(':common')
+
+}
+
+application {
+    mainClass = 'ru.nsu.kolodina.keys.Client'
 }
 
 test {
