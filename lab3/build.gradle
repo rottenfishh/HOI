@@ -2,7 +2,7 @@ plugins {
     id 'java'
 }
 
-group = 'ru.nsu.kolodina.keys'
+group = 'ru.nsu.kolodina.crawler'
 version = '1.0-SNAPSHOT'
 
 repositories {

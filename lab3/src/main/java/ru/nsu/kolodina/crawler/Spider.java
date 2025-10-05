@@ -1,8 +1,5 @@
-package ru.nsu.kolodina.keys;
+package ru.nsu.kolodina.crawler;
 
-import com.sun.net.httpserver.Request;
-
-import java.util.ArrayList;
 import java.util.List;
 
 public class Spider {

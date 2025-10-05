@@ -1,6 +1,5 @@
-package ru.nsu.kolodina.keys;
+package ru.nsu.kolodina.crawler;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 

@@ -1,4 +1,4 @@
-package ru.nsu.kolodina.keys;
+package ru.nsu.kolodina.crawler;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -8,7 +8,6 @@ import java.net.ProtocolException;
 import java.net.URI;
 import java.net.URL;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import lombok.AllArgsConstructor;
 import org.json.JSONObject;
@@ -18,13 +17,7 @@ public class Walker implements Runnable {
 
     String urlString;
     ResponseFormat response;
-//
-//    {
-//        "message": "some text",
-//            "successors": ["path_1", "path_2", "path_3", ...,
-//        "path_n"],
-//    }
-//
+
     public ResponseFormat parseJson(String json) {
         JSONObject jsonObject = new JSONObject(json);
         String message = jsonObject.getString("message");
