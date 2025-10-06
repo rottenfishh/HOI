@@ -13,43 +13,14 @@ import lombok.AllArgsConstructor;
 import org.json.JSONObject;
 
 @AllArgsConstructor
-public class Walker implements Runnable {
+public class Walker{
 
-    String urlString;
-    ResponseFormat response;
-
-    public ResponseFormat parseJson(String json) {
-        JSONObject jsonObject = new JSONObject(json);
-        String message = jsonObject.getString("message");
-        List<String> successors = jsonObject.getJSONArray("successors")
-                .toList().stream().map(Object::toString).toList();
-
-        ResponseFormat resp = new ResponseFormat();
-        resp.setMessage(message);
-        resp.setSuccessors(successors);
-        return resp;
-    }
-
-    public String readInput(BufferedReader in) {
-        String inputLine;
-        StringBuilder content = new StringBuilder();
-        try {
-            while ((inputLine = in.readLine()) != null) {
-                content.append(inputLine);
-            }
-            in.close();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        System.out.println("walker" + content.toString());
-        return content.toString();
-    }
-
-    public HttpURLConnection openConnection(){
+    public HttpURLConnection openConnection(String urlString){
         URI uri = URI.create(urlString);
         HttpURLConnection con = null;
         try {
             URL url = uri.toURL();
+            //System.out.println("Connecting to " + url);
             con = (HttpURLConnection) url.openConnection();
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -63,18 +34,41 @@ public class Walker implements Runnable {
         return con;
     }
 
-    @Override
-    public void run() {
-        HttpURLConnection connection = openConnection();
+    public String readInput(BufferedReader in) {
+        String inputLine;
+        StringBuilder content = new StringBuilder();
+        try {
+            while ((inputLine = in.readLine()) != null) {
+                content.append(inputLine);
+            }
+            in.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        //System.out.println("walker" + content.toString());
+        return content.toString();
+    }
 
+    public void parseJson(String json, ResponseFormat response) {
+        JSONObject jsonObject = new JSONObject(json);
+        String message = jsonObject.getString("message");
+        List<String> successors = jsonObject.getJSONArray("successors")
+                .toList().stream().map(Object::toString).toList();
+        response.setMessage(message);
+        response.setSuccessors(successors);
+    }
+
+    public void getResponse(String url, ResponseFormat response) {
+        HttpURLConnection connection = openConnection(url);
         int status = 0;
         try {
             status = connection.getResponseCode();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            System.err.println("Status code error");
+            return;
         }
-
         if (status != 200) {
+            System.out.println("Connection error");
             return;
         }
 
@@ -86,6 +80,6 @@ public class Walker implements Runnable {
         }
 
         String content = readInput(in);
-        response = parseJson(content);
+        parseJson(content, response);
     }
 }
