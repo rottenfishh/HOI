@@ -15,37 +15,21 @@ import org.json.JSONObject;
 @AllArgsConstructor
 public class Walker{
 
-    public HttpURLConnection openConnection(String urlString){
+    public HttpURLConnection openConnection(String urlString) throws IOException {
         URI uri = URI.create(urlString);
-        HttpURLConnection con = null;
-        try {
-            URL url = uri.toURL();
-            //System.out.println("Connecting to " + url);
-            con = (HttpURLConnection) url.openConnection();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        try {
-            con.setRequestMethod("GET");
-        } catch (ProtocolException e) {
-            throw new RuntimeException(e);
-        }
+        URL url = uri.toURL();
+        HttpURLConnection con = (HttpURLConnection) url.openConnection();
+        con.setRequestMethod("GET");
         return con;
     }
 
-    public String readInput(BufferedReader in) {
+    public String readInput(BufferedReader in) throws IOException {
         String inputLine;
         StringBuilder content = new StringBuilder();
-        try {
-            while ((inputLine = in.readLine()) != null) {
-                content.append(inputLine);
-            }
-            in.close();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        while ((inputLine = in.readLine()) != null) {
+            content.append(inputLine);
         }
-        //System.out.println("walker" + content.toString());
+        in.close();
         return content.toString();
     }
 
@@ -59,27 +43,29 @@ public class Walker{
     }
 
     public void getResponse(String url, ResponseFormat response) {
-        HttpURLConnection connection = openConnection(url);
+        HttpURLConnection connection = null;
         int status = 0;
         try {
+            connection = openConnection(url);
             status = connection.getResponseCode();
         } catch (IOException e) {
-            System.err.println("Status code error");
+            System.out.println(e.getMessage());
             return;
         }
+
         if (status != 200) {
             System.out.println("Connection error");
             return;
         }
 
-        BufferedReader in = null;
+        String content = null;
         try {
-            in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            content = readInput(in);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
-        String content = readInput(in);
         parseJson(content, response);
     }
 }
