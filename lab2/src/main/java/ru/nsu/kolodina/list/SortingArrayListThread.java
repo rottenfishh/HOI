@@ -10,7 +10,7 @@ import static java.lang.Thread.sleep;
 
 @RequiredArgsConstructor
 public class SortingArrayListThread implements Runnable{
-    final List<String> list = Collections.synchronizedList(new ArrayList<>());
+    final List<String> list;
 
     @Override
     public void run() {

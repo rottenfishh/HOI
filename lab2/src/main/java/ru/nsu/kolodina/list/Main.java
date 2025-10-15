@@ -1,6 +1,9 @@
 package ru.nsu.kolodina.list;
 
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Scanner;
 
 public class Main {
@@ -10,10 +13,11 @@ public class Main {
         int numOfThreads = Integer.parseInt(args[0]);
         SyncLinkedList<String> linkedList = new SyncLinkedList<>();
         Node<String> head = linkedList.head;
-
+        List<String> list = Collections.synchronizedList(new ArrayList<>());
         String buffer = "";
 
         for (int i = 0; i < numOfThreads; i++) {
+            //Thread sortingThread = new Thread(new SortingArrayListThread(list));
             Thread sortingThread = new Thread(new SortingThread(linkedList));
             sortingThread.start();
         }
