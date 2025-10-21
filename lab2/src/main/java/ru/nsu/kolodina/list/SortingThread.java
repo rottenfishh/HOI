@@ -5,13 +5,16 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import static java.lang.Thread.sleep;
 
 @RequiredArgsConstructor
 public class SortingThread implements Runnable{
-    @NonNull
-    SyncLinkedList<String> list;
+    final SyncLinkedList<String> list;
+    final AtomicInteger counter;
     Node<String> prev, cur0, cur1;
+    boolean flag = false;
 
     public boolean lockThreeElems() {
         prev.lock.lock();
@@ -43,7 +46,6 @@ public class SortingThread implements Runnable{
     @Override
     public void run() {
         boolean change = false;
-        boolean flag = false;
 
         while(true) {
             try {
@@ -59,10 +61,11 @@ public class SortingThread implements Runnable{
                 change = false;
 
                 while(lockThreeElems()) {
-
                     if (cur0.getData().compareTo(cur1.getData()) > 0) {
                         change = true;
                         swapNodes(prev, cur0, cur1);
+                        System.out.println(counter.incrementAndGet());
+
                     }
                     cur1.lock.unlock();
                     cur0.lock.unlock();

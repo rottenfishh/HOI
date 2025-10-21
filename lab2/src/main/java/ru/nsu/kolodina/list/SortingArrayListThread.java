@@ -5,12 +5,14 @@ import lombok.RequiredArgsConstructor;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.lang.Thread.sleep;
 
 @RequiredArgsConstructor
 public class SortingArrayListThread implements Runnable{
     final List<String> list;
+    final AtomicInteger counter;
 
     @Override
     public void run() {
@@ -28,6 +30,7 @@ public class SortingArrayListThread implements Runnable{
                             temp = list.get(i);
                             list.set(i, list.get(j));
                             list.set(j, temp);
+                            System.out.println(counter.incrementAndGet());
                         }
                     }
                 }
