@@ -1,19 +1,18 @@
 package ru.nsu.kolodina.crawler;
 
+import lombok.AllArgsConstructor;
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.ProtocolException;
 import java.net.URI;
 import java.net.URL;
 import java.util.List;
 
-import lombok.AllArgsConstructor;
-import org.json.JSONObject;
-
 @AllArgsConstructor
-public class Walker{
+public class Walker {
 
     public HttpURLConnection openConnection(String urlString) throws IOException {
         URI uri = URI.create(urlString);
@@ -43,13 +42,16 @@ public class Walker{
     }
 
     public void getResponse(String url, ResponseFormat response) {
+        //System.out.println(url);
         HttpURLConnection connection = null;
         int status = 0;
+        int tries = 5;
         try {
             connection = openConnection(url);
             status = connection.getResponseCode();
         } catch (IOException e) {
             System.out.println(e.getMessage());
+            System.out.println(url);
             return;
         }
 
@@ -64,6 +66,8 @@ public class Walker{
             content = readInput(in);
         } catch (IOException e) {
             throw new RuntimeException(e);
+        } finally {
+            connection.disconnect();
         }
 
         parseJson(content, response);
