@@ -1,0 +1,14 @@
+Task X1
+• Parse the XML file provided using Java SAX/StAX.
+• For each person extract all the available information: id, first name, last name, gender, spouse, parents,
+children, siblings
+• Validate the consistency: there are auxiliary markers in XML such as number of children
+• Prepare to write the collected data into another XML, where there is the only entry for each person and
+it contain entire information about the person. The information must be as structured as possible. For
+example, use brother and sister terms instead of sibling.
+Each entry from the original file contains only part of information about the person. There are multiple
+entries for each person and they could duplicate. Format is not strict so the same type of information could
+be represented differently.
+
+
+/// later go and check all ids and names for matching (siblings, parents, spouce, children)

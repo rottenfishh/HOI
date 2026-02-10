@@ -1,0 +1,20 @@
+<person id="P407241">
+    <spouce value="NONE"/>
+    <surname value="Schilke"/>
+  </person>
+  <person id="P385062">
+    <siblings-number value="0"/>
+    <family-name>Giard</family-name>
+    <firstname>Jessia</firstname>
+    <spouce value="NONE"/>
+  </person>
+
+  <person id="P403122">
+      <spouce value="NONE"/>
+      <siblings-number value="1"/>
+    </person>
+    <person id="P393003">
+      <siblings val="P392999 P393002"/>
+      <id value="P393003"/>
+      <spouce/>
+    </person>

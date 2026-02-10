@@ -4,21 +4,21 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 
-..
-
-*.clj
-
-../lab4-clojure
-../task_4
-../lab1-clojure
-../lab2-clojure
-../lab3-clojuree
-
 ### IntelliJ IDEA ###
 .idea/modules.xml
 .idea/jarRepositories.xml
 .idea/compiler.xml
 .idea/libraries/
+.idea
+
+lab1
+lab4-clojure
+task_4
+lab1-clojure
+lab2-clojure
+lab3-clojuree
+lab3-clojure
+
 *.iws
 *.iml
 *.ipr
