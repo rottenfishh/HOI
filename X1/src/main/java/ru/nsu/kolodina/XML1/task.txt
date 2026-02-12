@@ -11,4 +11,5 @@ entries for each person and they could duplicate. Format is not strict so the sa
 be represented differently.
 
 
-/// later go and check all ids and names for matching (siblings, parents, spouce, children)
+/// check children id and parent vlauae
+/// normalize genders

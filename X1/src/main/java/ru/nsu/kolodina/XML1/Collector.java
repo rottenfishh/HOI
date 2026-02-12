@@ -8,54 +8,70 @@ import java.util.*;
 public class Collector {
     PeopleInfo peopleInfo;
 
-    public Map<String, Person> mergeIds() {
+    public Map<String, Person> merge() {
         Map<String, Person> idToPerson = new HashMap<>();
+        System.out.println("yeah" + peopleInfo.getIdToPerson().containsKey("P410644"));
         for (Map.Entry<String, Person> entry : peopleInfo.IdToPerson.entrySet()) {
             Person fullPerson = entry.getValue();
             Map<String, String> relatives = new HashMap<>();
             List<Person> personFromName = peopleInfo.getNameToPerson().get(fullPerson.getFullName());
-            for (Person person : personFromName) { // if we merged this person by id alone, remove it from names list
-                if (person.getId().equals(fullPerson.getId())) { // if it does have id, its already merged
-                    peopleInfo.getNameToPerson().get(fullPerson.getFullName()); // dont remove this
-                }
+//            for (Person person : personFromName) { // if we merged this person by id alone, remove it from names list
+//                if (person.getId().equals(fullPerson.getId())) { // if it does have id, its already merged
+//                    peopleInfo.getNameToPerson().get(fullPerson.getFullName()); // dont remove this
+//                }
+//            }
+            if (peopleInfo.getNameToPerson().containsKey(fullPerson.getFullName())) {
+                peopleInfo.getNameToPerson().get(fullPerson.getFullName()).add(fullPerson); // put full person idk
             }
-            peopleInfo.getNameToPerson().get(fullPerson.getFullName()).add(fullPerson); // put full person idk
 
             if (idToPerson.containsKey(entry.getKey())) {
-                System.err.println("duplicate id: " + entry.getKey());
+                System.out.println("duplicate id: " + entry.getKey());
             }
             idToPerson.put(entry.getKey(), fullPerson);
         }
-
+        System.out.println("yo" + idToPerson.containsKey("P410644"));
         mergePeopleWithOnlyName(idToPerson, peopleInfo.getNameToPerson(), peopleInfo.getPeople());
 
         for (Person guy: idToPerson.values()) {
+            Parser.collectFullName(guy);
             mergeRelativesByIds(guy, peopleInfo.getNameToPerson(), idToPerson);
         }
 
+        System.out.println("mm" + idToPerson.containsKey("P410644"));
         return idToPerson;
     }
 
     public Map<String, String> mergeRelativesByIds(Person person, Map<String, List<Person>> nameToPerson, Map<String, Person> idToPerson) {
+        List<String> namesToRemove = new ArrayList<>();
         for (Map.Entry<String, String> relative: person.relativeToRole.entrySet()) { // merge relatives by id
-            if (relative.getKey().startsWith("P")) {
+            if (Person.isId(relative.getKey())) {
+                if (!idToPerson.containsKey(relative.getKey())) {
+                    System.out.println("why" + relative.getKey() + " doesn't exist");
+                }
                 String name = idToPerson.get(relative.getKey()).getFullName();
                 String role = relative.getValue();
-                if (role.equals("parent") || role.equals("siblings") || role.equals("spouce")) {
+                if (!Person.isSpecificRole(role)) {
                     if (name != null) {
                         String relativeRole = person.relativeToRole.get(name);
-                        person.relativeToRole.put(relative.getKey(), relativeRole);
+                        if (relativeRole != null) {
+                            person.relativeToRole.put(relative.getKey(), relativeRole);
+                        }
                     }
                 }
                 // if we already have relative id here, delete their name
-                person.relativeToRole.remove(name);
+//                person.relativeToRole.remove(name);
+                namesToRemove.add(name);
             }
         }
 
+        List<PersonToRole> idsToPut = new ArrayList<>();
         for (Map.Entry<String, String> relative: person.relativeToRole.entrySet()) {
-            if (!relative.getKey().startsWith("P")) {
+            if (!Person.isId(relative.getKey())) {
                 // find their ids by name
                 List<Person> suspects = nameToPerson.get(relative.getKey()); // нашли потенциальных родственников по имени
+                if (suspects == null) {
+                    continue;
+                }
                 for (Person dude : suspects) {
                     if (dude.getId() == null) {
                         continue;
@@ -69,19 +85,29 @@ public class Collector {
                     if (ourDudeRole == null) {
                         continue;
                     }
-                    person.relativeToRole.put(dude.getId(), role);
+                    //person.relativeToRole.put(dude.getId(), role);
+                    idsToPut.add(new PersonToRole(dude.getId(), role));
                 }
-                person.relativeToRole.remove(relative.getKey());
+//                person.relativeToRole.remove(relative.getKey());
+                namesToRemove.add(relative.getKey());
             }
+        }
+        for (String name: namesToRemove) {
+            person.relativeToRole.remove(name);
+        }
+        for (PersonToRole id: idsToPut) {
+            person.relativeToRole.put(id.name, id.role);
         }
         return person.relativeToRole;
     }
 
     public void mergePeopleWithOnlyName(Map<String, Person> idToPerson, Map<String, List<Person>> nameToPerson, List<Person> people) {
-        System.out.println(nameToPerson);
         // используя вторичные признаки??? kill myself
-
+        System.out.println(nameToPerson.containsKey("Shawna Nine"));
         for (Map.Entry<String, List<Person>> entry : nameToPerson.entrySet()) {
+            if (entry.getKey().equals("Shawna Nine")) {
+                System.out.println("ye" + entry.getValue().size());
+            }
             List<Person> ids = new ArrayList<>();
             List<Person> noIds = new ArrayList<>();
             for (Person person : entry.getValue()) {
@@ -92,6 +118,11 @@ public class Collector {
                 }
             }
             for (Person person : noIds) {
+                if (ids.size() == 1) {
+                    Person fullPerson = mergePersonToId(person, ids.getFirst());
+
+                    idToPerson.put(fullPerson.getId(), fullPerson);
+                }
                 for (Person id: ids) {
                     int childNum1 = person.getChildrenNumber();
                     int childNum2 = id.getChildrenNumber();
@@ -100,13 +131,15 @@ public class Collector {
                             continue;
                         }
                     }
-                    if (!(person.getGender().equals(id.getGender()))) {
+                    if ((person.getGender() != null) && !(person.getGender().equals(id.getGender()))) {
                         continue;
                     }
                     if (!validateRelatives(person, id)) {
                         continue;
                     }
                     Person fullPerson = mergePersonToId(person, id);
+                    Parser.collectFullName(fullPerson);
+                    idToPerson.put(fullPerson.id, fullPerson);
                 }
             }
         }
@@ -127,9 +160,9 @@ public class Collector {
                 return false;
             }
         }
-        if (!Objects.equals(person1.getSpouce(), "") && !Objects.equals(person2.getSpouce(), "")) {
-            String spouse1 = person1.getSpouce();
-            String spouse2 = person2.getSpouce();
+        if (!Objects.equals(person1.getSpouce(), null) && !Objects.equals(person2.getSpouce(), null)) {
+            String spouse1 = person1.getSpouce().name;
+            String spouse2 = person2.getSpouce().name;
             if (!isSamePerson(spouse1, spouse2)) {
                 return false;
             }
@@ -138,14 +171,14 @@ public class Collector {
     }
 
     public boolean isSamePerson(String name1, String name2) {
-        if (name1.startsWith("P") && name2.startsWith("P")) {
+        if (Person.isId(name1) && Person.isId(name2)) {
             return name1.equals(name2);
         }
-        else if (!name1.startsWith("P") && !name2.startsWith("P")) {
+        else if (!Person.isId(name1) && !Person.isId(name2)) {
             return name1.equals(name2);
         } else {
             // idk find mother name. check if its the same person
-            if (name1.startsWith("P")) {
+            if (Person.isId(name1)) {
                 String nameFromId1 = peopleInfo.IdToPerson.get(name1).getFullName();
                 return name1.equals(nameFromId1);
             } else {

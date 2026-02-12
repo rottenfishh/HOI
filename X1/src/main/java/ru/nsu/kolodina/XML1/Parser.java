@@ -17,6 +17,7 @@ import java.util.*;
 public class Parser {
 
     public PeopleInfo readXML(String path) {
+        Set<String> ids = new HashSet<>();
         List<Person> people = new ArrayList<Person>();
         Map<String, Person> IdToPerson = new HashMap<>();
         Map<String, List<Person>> NameToPerson = new HashMap<>();
@@ -46,15 +47,22 @@ public class Parser {
                                 if (IdToPerson.containsKey(attrId.getValue())) {
                                     person = IdToPerson.get(attrId.getValue());
                                 }
-                                person.setId(attrId.getValue());
+                                person.setId(attrId.getValue().trim());
+                            }
+                            ids.add(person.getId());
+
+                            Attribute nameId = element.getAttributeByName(new QName("name"));
+                            if (nameId != null) {
+                                person.setFullName(nameId.getValue());
                             }
                             break;
                         case "id":
-                            String id = extractFromAttrOrText(reader, element, "value");
+                            String id = extractFromAttrOrText(reader, element, "value").trim();
                             if (IdToPerson.containsKey(id)) {
                                 person = IdToPerson.get(id); // fix later idk. merge them
                             }
                             person.setId(id);
+                            ids.add(id);
                             break;
                         case "fullname":
                             parseFullName(reader, person);
@@ -78,8 +86,11 @@ public class Parser {
                         case "siblings":
                             Attribute siblingId = element.getAttributeByName(new QName("val"));
                             if (siblingId != null) {
-                                if (!person.relativeToRole.containsKey(siblingId.getValue())) {
-                                    person.relativeToRole.put(siblingId.getValue(), "siblings");
+                                String[] sibs = siblingId.getValue().split(" ");
+                                for (String sib : sibs) {
+                                    if (!person.relativeToRole.containsKey(sib)) {
+                                        person.relativeToRole.put(sib, "siblings");
+                                    }
                                 }
                             } else {
                                 parseSiblings(reader, person);
@@ -129,15 +140,21 @@ public class Parser {
                     String tag = element.getName().getLocalPart();
                     if (tag.equals("person")) {
                         peopleInfo.people.add(person);
-                        collectFullName(person);
-
-                        if (!Objects.equals(person.id, "")) {
-                            peopleInfo.IdToPerson.put(person.id, person);
+                        if (person.fullName == null || person.fullName.isEmpty()) {
+                            collectFullName(person);
                         }
-
-                        if (!Objects.equals(person.fullName, "")) {
-                            peopleInfo.NameToPerson.putIfAbsent(person.fullName, new ArrayList<>());
-                            peopleInfo.NameToPerson.get(person.fullName).add(person);
+                        if (!Objects.equals(person.id, null)) {
+                            peopleInfo.IdToPerson.put(person.id, person);
+                        } else { // put to names if only no id
+                            //System.out.println(person.fullName);
+                            if (!Objects.equals(person.fullName, null)) {
+                                peopleInfo.NameToPerson.putIfAbsent(person.fullName, new ArrayList<>());
+                                peopleInfo.NameToPerson.get(person.fullName).add(person);
+                            }
+                        }
+                        if (person.fullName.equals("Yi Nakonechny")) {
+                            System.out.println("woo");
+                            System.out.println(person.id);
                         }
                     }
                 }
@@ -146,6 +163,7 @@ public class Parser {
         } catch (XMLStreamException e) {
             throw new RuntimeException(e);
         }
+        System.out.println("length " + ids.size());
         return peopleInfo;
     }
 
@@ -235,17 +253,19 @@ public class Parser {
 
     }
 
-    public void collectFullName(Person person) {
-        if (person.fullName != null) {
-            return;
+    public static void collectFullName(Person person) {
+        String first = person.firstName != null ? person.firstName : "";
+        String last = person.lastName != null ? person.lastName : "";
+
+        if (!first.isEmpty() && !last.isEmpty()) {
+            person.fullName = first + " " + last;
+        } else if (!first.isEmpty()) {
+            person.fullName = first;
+        } else if (!last.isEmpty()) {
+            person.fullName = last;
+        } else {
+            person.fullName = ""; // или null, если хочешь
         }
-        StringBuilder name = new StringBuilder();
-        if (person.firstName != null) {
-            name.append(person.firstName);
-        }
-        if (person.lastName != null) {
-            name.append(" ").append(person.lastName);
-        }
-        person.fullName = name.toString();
     }
+
 }
