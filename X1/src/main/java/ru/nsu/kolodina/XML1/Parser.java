@@ -49,6 +49,13 @@ public class Parser {
                                 person.setId(attrId.getValue());
                             }
                             break;
+                        case "id":
+                            String id = extractFromAttrOrText(reader, element, "value");
+                            if (IdToPerson.containsKey(id)) {
+                                person = IdToPerson.get(id); // fix later idk. merge them
+                            }
+                            person.setId(id);
+                            break;
                         case "fullname":
                             parseFullName(reader, person);
                             break;
@@ -125,8 +132,7 @@ public class Parser {
                         collectFullName(person);
 
                         if (!Objects.equals(person.id, "")) {
-                            peopleInfo.IdToPerson.putIfAbsent(person.id, new ArrayList<>());
-                            peopleInfo.IdToPerson.get(person.id).add(person);
+                            peopleInfo.IdToPerson.put(person.id, person);
                         }
 
                         if (!Objects.equals(person.fullName, "")) {

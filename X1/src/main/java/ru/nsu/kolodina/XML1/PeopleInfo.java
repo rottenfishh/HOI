@@ -11,7 +11,7 @@ import java.util.Map;
 @Setter
 @AllArgsConstructor
 public class PeopleInfo {
-    Map<String, List<Person>> IdToPerson;
+    Map<String, Person> IdToPerson;
     Map<String, List<Person>> NameToPerson;
     List<Person> people;
 }

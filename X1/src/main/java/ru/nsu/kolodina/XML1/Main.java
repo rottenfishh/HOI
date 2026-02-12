@@ -14,10 +14,13 @@ public class Main {
             if (person.id == null) {
                 counter++;
             }
-            System.out.println(person.id);
+            if (person.fullName == null) {
+                System.out.println("death");
+            }
         }
         System.out.println("ppl " +  ppl.people.size());
         System.out.println("ids" + ppl.IdToPerson.size());
         System.out.println("without ids" + counter);
+        System.out.println("names" + ppl.NameToPerson.size());
     }
 }
