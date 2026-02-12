@@ -13,13 +13,11 @@ public class Person {
     String firstName;
     String lastName;
     String gender;
-    Map<String, List<String>> roleToIDName;
-    Map<String, List<String>> roleToPerson;
-
+    Map<String, String> relativeToRole; // one relative can have only one role. however, relative can be id or name. need to merge them.
+    // in the end there will be the most specific role
     int childrenNumber;
 
     public Person() {
-        this.roleToIDName = new HashMap<>();
-        this.roleToPerson = new HashMap<>();
+        this.relativeToRole = new HashMap<>();
     }
 }
