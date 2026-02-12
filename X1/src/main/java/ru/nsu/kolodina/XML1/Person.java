@@ -13,21 +13,13 @@ public class Person {
     String firstName;
     String lastName;
     String gender;
-    List<String> parentIds;
-    String mother;
-    String father;
-    String spouseValue;
-    Person spouse;
-    Map<String, Person> parents;
-    Map<String, String> children;
-    Map<String, String> siblings;
+    Map<String, List<String>> roleToIDName;
+    Map<String, List<String>> roleToPerson;
 
     int childrenNumber;
 
     public Person() {
-        this.parents = new HashMap<>();
-        this.parentIds = new ArrayList<>();
-        this.siblings = new HashMap<>();
-        this.children = new HashMap<>();
+        this.roleToIDName = new HashMap<>();
+        this.roleToPerson = new HashMap<>();
     }
 }
