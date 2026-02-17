@@ -27,8 +27,7 @@ public class Parser {
     }
 
     public PeopleInfo readXML(String path) {
-        Set<String> ids = new HashSet<>();
-        List<Person> people = new ArrayList<Person>();
+        List<Person> people = new ArrayList<>();
         Map<String, Person> IdToPerson = new HashMap<>();
         Map<String, List<Person>> NameToPerson = new HashMap<>();
         PeopleInfo peopleInfo = new PeopleInfo(IdToPerson, NameToPerson, people);
@@ -50,16 +49,15 @@ public class Parser {
                             Attribute  attrId = element.getAttributeByName(new QName("id"));
                             if (attrId != null) {
                                 if (IdToPerson.containsKey(attrId.getValue())) {
-                                    person = Collector.mergePersonToId(person, IdToPerson.get(attrId.getValue()));
+                                    person = Collector.mergePersonToId(IdToPerson.get(attrId.getValue()), person);
                                     //person = IdToPerson.get(attrId.getValue());
                                 }
-                                person.setId(attrId.getValue().trim());
+                                person.setId(trimName(attrId.getValue()));
                             }
-                            ids.add(person.getId());
 
                             Attribute nameId = element.getAttributeByName(new QName("name"));
                             if (nameId != null) {
-                                person.setFullName(nameId.getValue());
+                                person.setFullName(trimName(nameId.getValue()));
                             }
                             break;
                         case "id":
@@ -69,7 +67,6 @@ public class Parser {
                                // person = IdToPerson.get(id); // fix later idk. merge them
                             }
                             person.setId(id);
-                            ids.add(id);
                             break;
                         case "fullname":
                             parseFullName(reader, person);
@@ -79,13 +76,14 @@ public class Parser {
                             person.setGender(gender);
                             break;
                         case "parent":
-                            String parent = extractFromAttrOrText(reader, element, "value");
+                            String parent = trimName(extractFromAttrOrText(reader, element, "value"));
                             if (!person.getRelativeToRole().containsKey(parent)) { // if person with relative role is not here yet, put it.
                                 person.getRelativeToRole().put(parent, "parent"); //if it is, their role cannot be more specific than one already here
                             }
                             break;
                         case "spouce":
-                            String spouce = extractFromAttrOrText(reader, element, "value");
+                            String spouce = trimName(extractFromAttrOrText(reader, element, "value"));
+
                             if (!person.getRelativeToRole().containsKey(spouce)) {
                                 person.getRelativeToRole().put(spouce, "spouce");
                             }
@@ -96,7 +94,7 @@ public class Parser {
                                 String[] sibs = siblingId.getValue().split(" ");
                                 for (String sib : sibs) {
                                     if (!person.getRelativeToRole().containsKey(sib)) {
-                                        person.getRelativeToRole().put(sib, "siblings");
+                                        person.getRelativeToRole().put(trimName(sib), "siblings");
                                     }
                                 }
                             } else {
@@ -117,31 +115,31 @@ public class Parser {
                             person.setChildrenNumber(number);
                             break;
                         case "mother":
-                            String mother = reader.getElementText();
+                            String mother = trimName(reader.getElementText());
                             person.getRelativeToRole().put(mother, "mother");
                             break;
                         case "father":
-                            String father = reader.getElementText();
+                            String father = trimName(reader.getElementText());
                             person.getRelativeToRole().put(father, "father");
                             break;
                         case "firstname":
-                            String firstName = extractFromAttrOrText(reader, element, "value");
+                            String firstName = trimName(extractFromAttrOrText(reader, element, "value"));
                             person.setFirstName(firstName);
                             break;
                         case "surname":
-                            String surname = extractFromAttrOrText(reader, element, "value");
+                            String surname = trimName(extractFromAttrOrText(reader, element, "value"));
                             person.setLastName(surname);
                             break;
                         case "family-name":
-                            String familyName = extractFromAttrOrText(reader, element, "value");
+                            String familyName = trimName(extractFromAttrOrText(reader, element, "value"));
                             person.setLastName(familyName);
                             break;
                         case "wife":
-                            String wife = extractFromAttrOrText(reader, element, "value");
+                            String wife = trimName(extractFromAttrOrText(reader, element, "value"));
                             person.getRelativeToRole().put(wife, "wife");
                             break;
                         case "husband":
-                            String husband = extractFromAttrOrText(reader, element, "value");
+                            String husband = trimName(extractFromAttrOrText(reader, element, "value"));
                             person.getRelativeToRole().put(husband, "husband");
                             break;
                     }
@@ -172,7 +170,6 @@ public class Parser {
             System.err.println(error);
             throw new RuntimeException(e);
         }
-        System.out.println("length " + ids.size());
         return peopleInfo;
     }
 
@@ -195,10 +192,10 @@ public class Parser {
                 String tag = nextEvent.asStartElement().getName().getLocalPart();
                 switch (tag) {
                     case "first":
-                        person.setFirstName(reader.getElementText());
+                        person.setFirstName(reader.getElementText().trim());
                         break;
                     case "family":
-                        person.setLastName(reader.getElementText());
+                        person.setLastName(reader.getElementText().trim());
                 }
             }
             if (nextEvent.isEndElement()) {
@@ -218,7 +215,7 @@ public class Parser {
                 String tag = element.getName().getLocalPart();
                 String name = reader.getElementText();
                 if (tag.equals("brother") || tag.equals("sister")) {
-                    person.getRelativeToRole().put(name, tag);
+                    person.getRelativeToRole().put(trimName(name), tag);
                 }
             }
 
@@ -238,15 +235,13 @@ public class Parser {
                 StartElement element = nextEvent.asStartElement();
                 String tag = element.getName().getLocalPart(); // child role
                 Attribute childId = element.getAttributeByName(new QName("id"));
-                if (person.getId().equals("P386209")) {
-
-                }
+                String childName;
                 if (childId != null) {
-                    person.getRelativeToRole().put(childId.getValue(), tag);
+                    childName = childId.getValue();
                 } else {
-                    String value = reader.getElementText();
-                    person.getRelativeToRole().put(value, tag);
+                    childName = reader.getElementText();
                 }
+                person.getRelativeToRole().put(trimName(childName), tag);
             }
 
             if (nextEvent.isEndElement()) {
@@ -274,4 +269,7 @@ public class Parser {
         }
     }
 
+    public static String trimName(String name) {
+        return name.trim().replaceAll("\\s+", " ");
+    }
 }
