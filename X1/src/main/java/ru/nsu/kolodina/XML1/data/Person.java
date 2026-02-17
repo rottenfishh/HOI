@@ -1,4 +1,4 @@
-package ru.nsu.kolodina.XML1;
+package ru.nsu.kolodina.XML1.data;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -16,9 +16,12 @@ public class Person {
     Map<String, String> relativeToRole; // one relative can have only one role. however, relative can be id or name. need to merge them.
     // in the end there will be the most specific role
     int childrenNumber;
+    int siblingsNumber;
 
     public Person() {
         this.relativeToRole = new HashMap<>();
+        this.childrenNumber = -1;
+        this.siblingsNumber = -1;
     }
 
     public PersonToRole getSpouce() {

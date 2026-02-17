@@ -1,4 +1,4 @@
-package ru.nsu.kolodina.XML1;
+package ru.nsu.kolodina.XML1.data;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

@@ -1,13 +1,10 @@
 package ru.nsu.kolodina.XML1;
 
+import ru.nsu.kolodina.XML1.data.PeopleInfo;
+import ru.nsu.kolodina.XML1.data.Person;
+
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.stream.XMLEventReader;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamException;
 import javax.xml.transform.TransformerException;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.util.List;
 import java.util.Map;
 
 public class Main {
@@ -15,30 +12,29 @@ public class Main {
         Parser parser = new Parser();
         PeopleInfo ppl = parser.readXML("people.xml");
         int counter = 0;
-        for (Person person : ppl.people) {
-            if (person.id == null) {
+        for (Person person : ppl.getPeople()) {
+            if (person.getId() == null) {
                 counter++;
             }
-            if (person.fullName == null) {
+            if (person.getFullName() == null) {
                 System.out.println("death");
             }
         }
-        System.out.println("ppl " +  ppl.people.size());
-        System.out.println("ids" + ppl.IdToPerson.size());
+        System.out.println("ppl " +  ppl.getPeople().size());
+        System.out.println("ids" + ppl.getIdToPerson().size());
         System.out.println("without ids" + counter);
-        System.out.println("names" + ppl.NameToPerson.size());
+        System.out.println("names" + ppl.getNameToPerson().size());
 
         Collector collector = new Collector(ppl);
         Map<String, Person> result = collector.merge();
-        System.out.println(result.containsKey("P410644"));
-        Person p = result.get("P410644");
-//        for (Map.Entry<String, Person> entry : result.entrySet()) {
-//            System.out.println(entry.getKey() + ": " + entry.getValue());
-//        }
         System.out.println(result.size());
+
+        Validator validator = new Validator();
+        validator.validatePersons(result);
+
         Writer writer = new Writer();
         try {
-            writer.writePrettyXML("output.xml", result);
+            writer.writePrettyXML("output2.xml", result);
         } catch (ParserConfigurationException | TransformerException e) {
             throw new RuntimeException(e);
         }

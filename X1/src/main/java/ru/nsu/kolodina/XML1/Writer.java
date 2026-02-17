@@ -2,6 +2,8 @@ package ru.nsu.kolodina.XML1;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import ru.nsu.kolodina.XML1.data.Person;
+import ru.nsu.kolodina.XML1.data.PersonToRole;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -20,64 +22,6 @@ import java.util.Map;
 
 public class Writer {
 
-    public void writeXML(String path, Map<String, Person> ppl) throws FileNotFoundException, XMLStreamException {
-        XMLOutputFactory output = XMLOutputFactory.newInstance();
-
-        XMLStreamWriter writer = output.createXMLStreamWriter(
-                new FileOutputStream(path));
-        for (Person person: ppl.values()) {
-            writer.writeStartElement("person");
-            writer.writeAttribute("id", person.id);
-            writer.writeStartElement("fullName");
-            writer.writeCharacters(person.fullName);
-            writer.writeEndElement();
-
-            writer.writeStartElement("gender");
-            writer.writeCharacters(person.gender);
-            writer.writeEndElement();
-
-            List<PersonToRole> siblings = person.getSiblings();
-            if (!siblings.isEmpty()) {
-                writer.writeStartElement("siblings");
-                for (PersonToRole sibling: siblings) {
-                    writer.writeStartElement(sibling.role);
-                    writer.writeCharacters(sibling.name);
-                    writer.writeEndElement();
-                }
-                writer.writeEndElement();
-            }
-
-            List<PersonToRole> children = person.getChildren();
-            if (!children.isEmpty()) {
-                writer.writeStartElement("children");
-                for (PersonToRole child: children) {
-                    writer.writeStartElement(child.role);
-                    writer.writeCharacters(child.name);
-                    writer.writeEndElement();
-                }
-                writer.writeEndElement();
-            }
-
-            List<PersonToRole> parents = person.getParents();
-            if (!parents.isEmpty()) {
-                writer.writeStartElement("parents");
-                for (PersonToRole parent: parents) {
-                    writer.writeStartElement(parent.role);
-                    writer.writeCharacters(parent.name);
-                    writer.writeEndElement();
-                }
-            }
-
-            PersonToRole spouse = person.getSpouce();
-            if (spouse != null) {
-                writer.writeStartElement(spouse.role);
-                writer.writeCharacters(spouse.name);
-                writer.writeEndElement();
-            }
-            writer.writeEndElement();
-        }
-    }
-
     public void writePrettyXML(String path, Map<String, Person> ppl) throws ParserConfigurationException, TransformerException {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = factory.newDocumentBuilder();
@@ -88,22 +32,22 @@ public class Writer {
         doc.appendChild(root);
         for (Person person: ppl.values()) {
             Element personElement = doc.createElement("person");
-            personElement.setAttribute("id", person.id);
+            personElement.setAttribute("id", person.getId());
 
             Element fullName = doc.createElement("fullName");
-            fullName.appendChild(doc.createTextNode(person.fullName));
+            fullName.appendChild(doc.createTextNode(person.getFullName()));
             personElement.appendChild(fullName);
 
             Element gender = doc.createElement("gender");
-            gender.appendChild(doc.createTextNode(person.gender));
+            gender.appendChild(doc.createTextNode(person.getGender()));
             personElement.appendChild(gender);
 
             List<PersonToRole> siblings = person.getSiblings();
             if (!siblings.isEmpty()) {
                 Element siblingsElement = doc.createElement("siblings");
                 for (PersonToRole sibling: siblings) {
-                    Element sib = doc.createElement(sibling.role);
-                    sib.appendChild(doc.createTextNode(sibling.name));
+                    Element sib = doc.createElement(sibling.getRole());
+                    sib.appendChild(doc.createTextNode(sibling.getName()));
                     siblingsElement.appendChild(sib);
                 }
                 personElement.appendChild(siblingsElement);
@@ -113,8 +57,8 @@ public class Writer {
             if (!children.isEmpty()) {
                 Element childrenElement = doc.createElement("children");
                 for (PersonToRole child: children) {
-                    Element childElement = doc.createElement(child.role);
-                    childElement.appendChild(doc.createTextNode(child.name));
+                    Element childElement = doc.createElement(child.getRole());
+                    childElement.appendChild(doc.createTextNode(child.getName()));
                     childrenElement.appendChild(childElement);
                 }
                 personElement.appendChild(childrenElement);
@@ -124,8 +68,8 @@ public class Writer {
             if (!parents.isEmpty()) {
                 Element parentsElement = doc.createElement("parents");
                 for (PersonToRole parent: parents) {
-                    Element parentElement = doc.createElement(parent.role);
-                    parentElement.appendChild(doc.createTextNode(parent.name));
+                    Element parentElement = doc.createElement(parent.getRole());
+                    parentElement.appendChild(doc.createTextNode(parent.getName()));
                     parentsElement.appendChild(parentElement);
                 }
                 personElement.appendChild(parentsElement);
@@ -133,9 +77,8 @@ public class Writer {
 
             PersonToRole spouse = person.getSpouce();
             if (spouse != null) {
-                System.out.println(spouse.role);
-                Element spouseElement = doc.createElement(spouse.role);
-                spouseElement.appendChild(doc.createTextNode(spouse.name));
+                Element spouseElement = doc.createElement(spouse.getRole());
+                spouseElement.appendChild(doc.createTextNode(spouse.getName()));
                 personElement.appendChild(spouseElement);
             }
             root.appendChild(personElement);
@@ -144,7 +87,6 @@ public class Writer {
         TransformerFactory transformerFactory = TransformerFactory.newInstance();
         Transformer transformer = transformerFactory.newTransformer();
 
-        // ENABLE INDENTATION
         transformer.setOutputProperty(OutputKeys.INDENT, "yes");
         transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
 
