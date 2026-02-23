@@ -184,7 +184,6 @@ public class Parser {
         return val;
     }
 
-    //surname
     public void parseFullName(XMLEventReader reader, Person person) throws XMLStreamException {
         while (reader.hasNext()) {
             XMLEvent nextEvent = reader.nextEvent();
