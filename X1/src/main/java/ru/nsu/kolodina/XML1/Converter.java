@@ -83,7 +83,6 @@ public class Converter {
                 jaxb.setChildren(children);
             }
 
-            // ---------- Братья / Сёстры ----------
             List<PersonToRole> siblingsList = p.getSiblings();
             if (!siblingsList.isEmpty()) {
                 People.Person.Siblings siblings = new People.Person.Siblings();
@@ -107,7 +106,6 @@ public class Converter {
                 jaxb.setSiblings(siblings);
             }
 
-            // ---------- Супруг ----------
             PersonToRole spouse = p.getSpouce();
             if (spouse != null) {
                 People.Person spouseJaxb = idToJaxb.get(spouse.getName());
