@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xs:element name="people">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="person" maxOccurs="unbounded">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="id" type="xs:ID"/>
+                            <xs:element name="fullname" type="xs:string"/>
+                            <xs:element name="gender" type="xs:string"/>
+                            <xs:element name="siblings" minOccurs="0">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="brother" minOccurs="0" type="xs:IDREF"/>
+                                        <xs:element name="sister" minOccurs="0" type="xs:IDREF"/>
+                                        <xs:element name="siblings" minOccurs="0" type="xs:IDREF"/>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+
+                            <xs:element name="children" minOccurs="0">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="son" minOccurs="0" type="xs:IDREF"/>
+                                        <xs:element name="daugther" minOccurs="0" type="xs:IDREF"/>
+                                        <xs:element name="child" minOccurs="0" type="xs:IDREF"/>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+
+                            <xs:element name="parents" minOccurs="0">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="parent" minOccurs="0" type="xs:IDREF"/>
+                                        <xs:element name="mother" minOccurs="0" type="xs:IDREF"/>
+                                        <xs:element name="father" minOccurs="0" type="xs:IDREF"/>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+
+                            <xs:choice minOccurs="0">
+                                <xs:element name="wife" type="xs:IDREF"/>
+                                <xs:element name="husband" type="xs:IDREF"/>
+                                <xs:element name="spouce" type="xs:IDREF"/>
+                            </xs:choice>
+
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+            <xs:attribute name="count" type="xs:int" use="optional"/>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>

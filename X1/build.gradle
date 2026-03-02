@@ -1,0 +1,30 @@
+plugins {
+    id 'java'
+    id "org.unbroken-dome.xjc" version "2.0.0"
+}
+
+group = 'ru.nsu.kolodina.keys'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'javax.xml.bind:jaxb-api:2.3.1'
+
+    implementation 'org.glassfish.jaxb:jaxb-runtime:2.3.3'
+
+    implementation 'com.sun.istack:istack-commons-runtime:3.0.12'
+
+    xjcTool 'com.sun.xml.bind:jaxb-xjc:2.3.3'
+
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    compileOnly 'org.projectlombok:lombok:1.18.42'
+    annotationProcessor 'org.projectlombok:lombok:1.18.42'
+}
+
+test {
+    useJUnitPlatform()
+}
