@@ -1,2 +1,4 @@
 # HOI
 NSU CS DATA PROCESSING AND STORAGE
+
+i love bd
